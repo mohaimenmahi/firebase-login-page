@@ -45,7 +45,7 @@ class Authen extends Component {
 
     promise
     .then((user) => {
-      var err = "Welcome "+user.email;
+      var err = "Welcome " + user.email;
       firebase.database().ref('users/'+user.uid).set({
         email: user.email
       });
@@ -64,13 +64,32 @@ class Authen extends Component {
 
     this.setState({err: 'Goodbye'});
   }
+  google() {
+    var provider = new firebase.auth.GoogleAuthProvider(); // Allows gmail id, invokes whenever we try to sign in with google
+    var promise = firebase.auth().signInWithPopup(provider); // for mobile device, Popup is not a good idea. There Redirect will be used
 
+    promise
+    .then((res) => {
+      var user = res.user;
+      console.log(res);
+
+      firebase.database().ref('users/' + user.uid).set({
+        email: user.email,
+        name: user.displayName
+      });
+      this.setState({err: 'Signed In With Goolge'});
+    }).catch((e) => {
+      var msg = e.message;
+      this.setState({err: msg});
+    });
+  }
   constructor(props){
     super(props);
 
     this.login = this.login.bind(this);
     this.signup = this.signup.bind(this);
     this.logout = this.logout.bind(this);
+    this.google = this.google.bind(this);
 
     this.state = {
       err: ''
@@ -84,7 +103,8 @@ class Authen extends Component {
         <p>{this.state.err}</p>
         <button onClick={this.login}>Log In</button>
         <button onClick={this.signup}>Sign Up</button>
-        <button onClick={this.logout} id="logout" className="hide">Log Out</button>
+        <button onClick={this.logout} id="logout" className="hide">Log Out</button> <br />
+        <button onClick={this.google} className="google">Sign In with Google</button>
       </div>
     );
   }
